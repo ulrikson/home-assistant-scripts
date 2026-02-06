@@ -41,6 +41,13 @@ fi
 if (($(echo "$MEAN < 100" | bc -l))); then
   FINAL_MESSAGE="Billig el idag! KBK!"
 else
+  # Determine prefix based on price
+  if (($(echo "$MEAN < 200" | bc -l))); then
+    PREFIX="Normala elpriser"
+  else
+    PREFIX="Dyr el"
+  fi
+
   echo "Price level high (mean: $MEAN). Requesting AI analysis..."
   
   PROMPT=$(cat <<EOF
@@ -86,7 +93,7 @@ EOF
     echo "Error: Failed to get response from Claude"
     exit 1
   fi
-  FINAL_MESSAGE="$ANALYSIS"
+  FINAL_MESSAGE="[$PREFIX] $ANALYSIS"
 fi
 
 # Truncate if needed (iOS notification limit)
