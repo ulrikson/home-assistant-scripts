@@ -32,52 +32,30 @@ if [ $? -ne 0 ] || [ -z "$SENSOR_DATA" ]; then
   exit 1
 fi
 
-# Extract prices
-TODAY=$(echo "$SENSOR_DATA" | jq -r '.attributes.raw_today[]?' 2>/dev/null)
-TOMORROW=$(echo "$SENSOR_DATA" | jq -r '.attributes.raw_tomorrow[]?' 2>/dev/null)
+# Extract today's prices as JSON
+TODAY_JSON=$(echo "$SENSOR_DATA" | jq -c '.attributes.raw_today')
 
-if [ -z "$TODAY" ]; then
+if [ -z "$TODAY_JSON" ] || [ "$TODAY_JSON" = "null" ]; then
   echo "Error: Could not extract price data from sensor"
   echo "Sensor data: $SENSOR_DATA"
   exit 1
 fi
 
-# Format prices (quarterly: 00:00, 00:15, 00:30, 00:45)
-format_prices() {
-  local prices="$1"
-  local output=""
-  local index=0
+# Create prompt with JSON data
+PROMPT=$(cat <<EOF
+Du får elprisdata i JSON-format för Sverige. Varje objekt har 'start', 'end' och 'value' (i öre/kWh).
 
-  while IFS= read -r price; do
-    local hour=$((index / 4))
-    local minute=$((index % 4 * 15))
-    output+="$(printf '%02d:%02d - %.2f öre/kWh\n' $hour $minute $price)"
-    ((index++))
-  done <<< "$prices"
-
-  echo "$output"
-}
-
-PRICES=$(format_prices "$TODAY")
-
-if [ -n "$TOMORROW" ]; then
-  PRICES+="\n\nMorgondagens priser:\n"
-  PRICES+=$(format_prices "$TOMORROW")
-fi
-
-# Inline prompt (Swedish)
-read -r -d '' PROMPT <<EOF || true
-Här är dagens elpriser i Sverige (öre/kWh):
-
-${PRICES}
+Dagens priser:
+$TODAY_JSON
 
 Analysera och ge:
-1. De 3 billigaste kvartersperioderna att använda el (med priser)
-2. De 3 dyraste kvartersperioderna att undvika (med priser)
+1. De 3 billigaste tidsperioderna att använda el (med exakta tider och priser)
+2. De 3 dyraste tidsperioderna att undvika (med exakta tider och priser)
 3. Ett praktiskt tips för dagen
 
 VIKTIGT: Svaret får INTE överstiga 250 tecken totalt. Håll det extremt kortfattat. Svara på svenska.
 EOF
+)
 
 # Call Claude Sonnet 4.5
 ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
