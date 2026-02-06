@@ -43,17 +43,30 @@ fi
 
 # Create prompt with JSON data
 PROMPT=$(cat <<EOF
-Du får elprisdata i JSON. Varje objekt har 'start' och 'value' (öre/kWh).
+You are analyzing electricity prices to help a homeowner optimize their energy usage and reduce costs.
 
-Data: $TODAY_JSON
+<data>
+$TODAY_JSON
+</data>
 
-Hitta 1-3 tidsperioder när det är DYRAST. Skriv EN kort varning på max 120 tecken.
+<instructions>
+1. Analyze the JSON data. Each object contains 'start' (timestamp) and 'value' (price in öre/kWh).
+2. Identify the 1-3 time periods with the HIGHEST prices today.
+3. Write ONE concise warning message in Swedish.
+4. Use ONLY hour format (e.g., "07-11" or "18-21"), not specific minutes.
+5. Keep the message under 120 characters total.
+6. Be direct and actionable - focus on when to avoid high usage.
+</instructions>
 
-Exempel på olika sätt att säga det:
-- Undvik kl 07-11 och 17-20 (dyrt)
-- Höga priser 07-10 och 18-21
+<examples>
+<example>Undvik kl 07-11 och 17-20 (dyrt)</example>
+<example>Höga priser 07-10 och 18-21</example>
+<example>Dyrast 06-09 och 17-19</example>
+</examples>
 
-Endast timmar. Var kreativ men koncis!
+<output_format>
+Output ONLY the warning message in Swedish. No preamble, no explanation, just the message itself.
+</output_format>
 EOF
 )
 
@@ -64,8 +77,8 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 60,
-    temperature: 1.0,
+    max_tokens: 100,
+    temperature: 0.5,
     messages: [{role: "user", content: $prompt}]
   }')" | \
   jq -r '.content[0].text' 2>/dev/null)
