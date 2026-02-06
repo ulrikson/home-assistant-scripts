@@ -43,9 +43,9 @@ if (($(echo "$MEAN < 100" | bc -l))); then
 else
   # Determine prefix based on price
   if (($(echo "$MEAN < 200" | bc -l))); then
-    PREFIX="Normala elpriser"
+    PREFIX="Normala elpriser."
   else
-    PREFIX="Dyr el"
+    PREFIX="Dyra elpriser."
   fi
 
   echo "Price level high (mean: $MEAN). Requesting AI analysis..."
@@ -67,7 +67,7 @@ $TODAY_JSON
 </instructions>
 
 <examples>
-<example>Undvik kl 07-11 och 17-20 (dyrt)</example>
+<example>Undvik kl 07-11 och 17-20</example>
 <example>Höga priser 07-10 och 18-21</example>
 <example>Dyrast 06-09 och 17-19</example>
 </examples>
@@ -93,7 +93,7 @@ EOF
     echo "Error: Failed to get response from Claude"
     exit 1
   fi
-  FINAL_MESSAGE="[$PREFIX] $ANALYSIS"
+  FINAL_MESSAGE="$PREFIX $ANALYSIS"
 fi
 
 # Truncate if needed (iOS notification limit)
