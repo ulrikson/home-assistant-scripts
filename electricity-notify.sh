@@ -76,7 +76,7 @@ Analysera och ge:
 2. De 3 dyraste kvartersperioderna att undvika (med priser)
 3. Ett praktiskt tips för dagen
 
-Håll svaret kort - max 4-5 meningar totalt. Svara på svenska.
+VIKTIGT: Svaret får INTE överstiga 250 tecken totalt. Håll det extremt kortfattat. Svara på svenska.
 EOF
 
 # Call Claude Sonnet 4.5
@@ -86,7 +86,7 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 500,
+    max_tokens: 120,
     messages: [{role: "user", content: $prompt}]
   }')" | \
   jq -r '.content[0].text' 2>/dev/null)
@@ -94,6 +94,12 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
 if [ $? -ne 0 ] || [ -z "$ANALYSIS" ]; then
   echo "Error: Failed to get response from Claude"
   exit 1
+fi
+
+# Truncate to 255 characters if needed (Home Assistant input_text limit)
+if [ ${#ANALYSIS} -gt 255 ]; then
+  ANALYSIS="${ANALYSIS:0:252}..."
+  echo "Warning: Response truncated to 255 characters"
 fi
 
 # Store analysis in Home Assistant helper entity
