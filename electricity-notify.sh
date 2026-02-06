@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # Required environment variables:
-# - GEMINI_KEY: API key for Gemini
+# - ANTHROPIC_API_KEY: API key for Claude
 # - HA_TOKEN: Home Assistant long-lived access token
 # - NORDPOOL_SENSOR: NordPool sensor entity ID (e.g., sensor.nordpool_kwh_se3_sek_0_10_0)
 
 # Validate required environment variables
-if [ -z "${GEMINI_KEY:-}" ]; then
-  echo "Error: GEMINI_KEY environment variable is not set"
+if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "Error: ANTHROPIC_API_KEY environment variable is not set"
   exit 1
 fi
 
@@ -79,14 +79,20 @@ Analysera och ge:
 Håll svaret kort - max 4-5 meningar totalt. Svara på svenska.
 EOF
 
-# Call Gemini
-ANALYSIS=$(curl -sf "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=$GEMINI_KEY" \
+# Call Claude Sonnet 4.5
+ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
   -H "Content-Type: application/json" \
-  -d "$(jq -n --arg prompt "$PROMPT" '{contents:[{parts:[{text:$prompt}]}]}')" | \
-  jq -r '.candidates[0].content.parts[0].text' 2>/dev/null)
+  -d "$(jq -n --arg prompt "$PROMPT" '{
+    model: "claude-sonnet-4-5-20250929",
+    max_tokens: 500,
+    messages: [{role: "user", content: $prompt}]
+  }')" | \
+  jq -r '.content[0].text' 2>/dev/null)
 
 if [ $? -ne 0 ] || [ -z "$ANALYSIS" ]; then
-  echo "Error: Failed to get response from Gemini"
+  echo "Error: Failed to get response from Claude"
   exit 1
 fi
 
