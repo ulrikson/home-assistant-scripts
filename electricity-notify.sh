@@ -49,11 +49,9 @@ Data: $TODAY_JSON
 
 Hitta 1-3 tidsperioder när det är DYRAST. Skriv EN kort varning på max 120 tecken.
 
-Variera formuleringen varje gång. Exempel på olika sätt att säga det:
-- "Undvik kl 07-11 och 17-20 (dyrt)"
-- "Skippa tvätten 08-12, dyraste tiden!"
-- "Höga priser 07-10 och 18-21"
-- "Vänta med disk: kl 06-09 kostar mest"
+Exempel på olika sätt att säga det:
+- Undvik kl 07-11 och 17-20 (dyrt)
+- Höga priser 07-10 och 18-21
 
 Endast timmar. Var kreativ men koncis!
 EOF
