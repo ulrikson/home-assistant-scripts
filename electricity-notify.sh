@@ -67,7 +67,7 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 60,
-    temperature: 1.3,
+    temperature: 1.0,
     messages: [{role: "user", content: $prompt}]
   }')" | \
   jq -r '.content[0].text' 2>/dev/null)
