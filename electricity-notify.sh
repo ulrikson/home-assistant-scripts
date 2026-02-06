@@ -96,15 +96,15 @@ if [ $? -ne 0 ] || [ -z "$ANALYSIS" ]; then
   exit 1
 fi
 
-# Send notification to Home Assistant
+# Store analysis in Home Assistant helper entity
 curl -sf -X POST -H "Authorization: Bearer $HA_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "$(jq -n --arg msg "$ANALYSIS" '{title:"⚡ Dagens elpriser",message:$msg}')" \
-  "http://homeassistant.local:8123/api/services/notify/notify"
+  -d "$(jq -n --arg msg "$ANALYSIS" '{entity_id:"input_text.electricity_analysis",value:$msg}')" \
+  "http://homeassistant.local:8123/api/services/input_text/set_value"
 
 if [ $? -ne 0 ]; then
-  echo "Error: Failed to send notification to Home Assistant"
+  echo "Error: Failed to store analysis in Home Assistant"
   exit 1
 fi
 
-echo "Notification sent successfully"
+echo "Analysis stored successfully"
