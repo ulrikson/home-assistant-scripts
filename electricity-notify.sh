@@ -43,17 +43,16 @@ fi
 
 # Create prompt with JSON data
 PROMPT=$(cat <<EOF
-Du får elprisdata i JSON-format för Sverige. Varje objekt har 'start', 'end' och 'value' (i öre/kWh).
+Du får elprisdata i JSON. Varje objekt har 'start' och 'value' (öre/kWh).
 
-Dagens priser:
-$TODAY_JSON
+Data: $TODAY_JSON
 
-Analysera och ge:
-1. De 3 billigaste tidsperioderna att använda el (med exakta tider och priser)
-2. De 3 dyraste tidsperioderna att undvika (med exakta tider och priser)
-3. Ett praktiskt tips för dagen
+Analysera och skriv EN mening på max 120 tecken med tidsperioder:
+"Billigast kl XX-XX, dyrast kl XX-XX"
 
-VIKTIGT: Svaret får INTE överstiga 250 tecken totalt. Håll det extremt kortfattat. Svara på svenska.
+Exempel: "Billigast 02-06 och 22-24, dyrast 07-11"
+
+Endast timmar (ingen minuter). En kort mening.
 EOF
 )
 
@@ -64,7 +63,7 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 120,
+    max_tokens: 60,
     messages: [{role: "user", content: $prompt}]
   }')" | \
   jq -r '.content[0].text' 2>/dev/null)
@@ -74,10 +73,10 @@ if [ $? -ne 0 ] || [ -z "$ANALYSIS" ]; then
   exit 1
 fi
 
-# Truncate to 255 characters if needed (Home Assistant input_text limit)
-if [ ${#ANALYSIS} -gt 255 ]; then
-  ANALYSIS="${ANALYSIS:0:252}..."
-  echo "Warning: Response truncated to 255 characters"
+# Truncate to 178 characters if needed (iOS notification limit)
+if [ ${#ANALYSIS} -gt 178 ]; then
+  ANALYSIS="${ANALYSIS:0:175}..."
+  echo "Warning: Response truncated to 178 characters"
 fi
 
 # Store analysis in Home Assistant helper entity
