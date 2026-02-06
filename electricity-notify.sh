@@ -47,12 +47,12 @@ Du får elprisdata i JSON. Varje objekt har 'start' och 'value' (öre/kWh).
 
 Data: $TODAY_JSON
 
-Analysera och skriv EN mening på max 120 tecken med tidsperioder:
-"Billigast kl XX-XX, dyrast kl XX-XX"
+Hitta 1-3 tidsperioder när det är DYRAST. Skriv EN mening på max 120 tecken:
+"Undvik kl XX-XX och XX-XX (dyrt)"
 
-Exempel: "Billigast 02-06 och 22-24, dyrast 07-11"
+Exempel: "Undvik kl 07-11 och 17-20 (dyrt)"
 
-Endast timmar (ingen minuter). En kort mening.
+Endast timmar. Fokus på dyra perioder. Kort och tydlig.
 EOF
 )
 
