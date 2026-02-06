@@ -47,12 +47,15 @@ Du får elprisdata i JSON. Varje objekt har 'start' och 'value' (öre/kWh).
 
 Data: $TODAY_JSON
 
-Hitta 1-3 tidsperioder när det är DYRAST. Skriv EN mening på max 120 tecken:
-"Undvik kl XX-XX och XX-XX (dyrt)"
+Hitta 1-3 tidsperioder när det är DYRAST. Skriv EN kort varning på max 120 tecken.
 
-Exempel: "Undvik kl 07-11 och 17-20 (dyrt)"
+Variera formuleringen varje gång. Exempel på olika sätt att säga det:
+- "Undvik kl 07-11 och 17-20 (dyrt)"
+- "Skippa tvätten 08-12, dyraste tiden!"
+- "Höga priser 07-10 och 18-21"
+- "Vänta med disk: kl 06-09 kostar mest"
 
-Endast timmar. Fokus på dyra perioder. Kort och tydlig.
+Endast timmar. Var kreativ men koncis!
 EOF
 )
 
@@ -64,6 +67,7 @@ ANALYSIS=$(curl -sf "https://api.anthropic.com/v1/messages" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 60,
+    temperature: 1.3,
     messages: [{role: "user", content: $prompt}]
   }')" | \
   jq -r '.content[0].text' 2>/dev/null)
